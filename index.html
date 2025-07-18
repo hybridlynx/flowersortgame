@@ -1,0 +1,158 @@
+<html>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flower Sort Game</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff0f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #b03060;
+    }
+    #game {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .tube {
+      width: 60px;
+      height: 200px;
+      background: #ffe4f0;
+      border: 2px solid #d87093;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      padding: 5px;
+      cursor: pointer;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    }
+    .flower {
+      font-size: 32px;
+      margin: 4px 0;
+    }
+    .selected {
+      border: 3px solid gold;
+    }
+    #reset {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: pink;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #800040;
+    }
+  </style>
+</head>
+<body>
+
+  <h1> Flower Sort Game </h1>
+  <div id="game"></div>
+  <button id="reset">Reset</button>
+
+  <script>
+    const flowers = ['💮', '🏵️', '🌷', '🪻'];
+    const tubes = [];
+    const tubeCount = 6;
+    const flowersPerTube = 4;
+    let selectedTube = null;
+
+    function createGame() {
+      tubes.length = 0;
+      document.getElementById('game').innerHTML = '';
+
+      let allFlowers = [];
+      for (let flower of flowers) {
+        for (let i = 0; i < flowersPerTube; i++) {
+          allFlowers.push(flower);
+        }
+      }
+      allFlowers = allFlowers.sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < 4; i++) {
+        tubes[i] = allFlowers.splice(0, flowersPerTube);
+      }
+
+      tubes[4] = [];
+      tubes[5] = [];
+
+      render();
+    }
+
+    function render() {
+      const game = document.getElementById('game');
+      game.innerHTML = '';
+
+      tubes.forEach((tube, index) => {
+        const tubeDiv = document.createElement('div');
+        tubeDiv.className = 'tube';
+        if (selectedTube === index) tubeDiv.classList.add('selected');
+        tubeDiv.onclick = () => handleTubeClick(index);
+
+        tube.forEach(flower => {
+          const flowerDiv = document.createElement('div');
+          flowerDiv.className = 'flower';
+          flowerDiv.textContent = flower;
+          tubeDiv.appendChild(flowerDiv);
+        });
+
+        game.appendChild(tubeDiv);
+      });
+    }
+
+    function handleTubeClick(index) {
+      if (selectedTube === null) {
+        if (tubes[index].length === 0) return;
+        selectedTube = index;
+      } else {
+        if (index === selectedTube) {
+          selectedTube = null;
+        } else {
+          moveFlower(selectedTube, index);
+          selectedTube = null;
+        }
+      }
+      render();
+      checkWin();
+    }
+
+    function moveFlower(from, to) {
+      const fromTube = tubes[from];
+      const toTube = tubes[to];
+      if (fromTube.length === 0 || toTube.length >= flowersPerTube) return;
+
+      const flower = fromTube[fromTube.length - 1];
+
+      if (toTube.length === 0 || toTube[toTube.length - 1] === flower) {
+        toTube.push(fromTube.pop());
+      }
+    }
+
+    function checkWin() {
+      const complete = tubes.every(tube =>
+        tube.length === 0 ||
+        (tube.length === flowersPerTube && tube.every(f => f === tube[0]))
+      );
+      if (complete) {
+        setTimeout(() => alert('🌟 You sorted all the flowers! 🌟'), 100);
+      }
+    }
+
+    document.getElementById('reset').onclick = createGame;
+
+    createGame();
+  </script>
+</body>
+</html>
